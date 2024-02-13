@@ -24,7 +24,7 @@ import ast
 import re
 
 #import datasets and reorder column
-ogilvie_path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\ogilvie_translation_advanced.xlsx"
+ogilvie_path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Ogilvie\ogilvie_translation_advanced1.xlsx"
 ogilvie = pd.read_excel(ogilvie_path)
 column_names = ogilvie.columns.to_list()
 
@@ -53,6 +53,10 @@ ogilvie['year'] = ogilvie['year'].apply(modify_years)
 
 #call the italian names(which will merge with mocarelli) 'guild_name'
 ogilvie = ogilvie.rename(columns = {'guild_name' : 'guild_name_eng'})
+#impute the translation not made in mocarelli, using the translation automatically imputed
+#see the file "pre_merging_analysis1"
+ogilvie['translation_moc'] = np.where(ogilvie['translation_moc'].isnull(),
+                                      ogilvie['guild_name_ITAlian'], ogilvie['translation_moc'])
 ogilvie['guild_name'] = ogilvie['translation_moc']
 #attribute direct translation to the ogilvie only if there is not the mocarelli trasnlation
 ogilvie['guild_name'] = np.where(ogilvie['guild_name'].isnull(), ogilvie['guild_name_ITA'], ogilvie['guild_name'])
@@ -79,12 +83,12 @@ duration_ = [(row[1] - row[0]) for key,row in grouped_ogilvie_min_max.iterrows()
 average_duration_ogilvie = sum(duration_) / len(duration_)
 
 #mocarelli
-mocarelli_path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\merge_senato_mocarelli_ADJUSTED.xlsx"
+mocarelli_path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\merge_senato_mocarelli\merge_senato_mocarelli1_ADJUSTED.xlsx"
 mocarelli_senato = pd.read_excel(mocarelli_path)
 mocarelli_senato_columns = mocarelli_senato.columns.to_list()
-year_columns = mocarelli_senato_columns[29:131]
+year_columns = mocarelli_senato_columns[30:55]
 mocarelli_senato = pd.melt(mocarelli_senato, id_vars=
-                           ['GuildsID', 'guild_name', 'place'], value_vars = year_columns, ignore_index=False)
+                           ['GuildsID', 'guild_name', 'place'], value_vars = year_columns , ignore_index=False)
 mocarelli_senato = mocarelli_senato.dropna(subset = ['value'])
 mocarelli_senato = mocarelli_senato.drop('variable', axis = 1)
 mocarelli_senato = mocarelli_senato.rename(columns = {'value' : 'year'})
@@ -106,9 +110,9 @@ grouped_final = grouped.agg({'combined_years': lambda x: list(x.dropna())})
 grouped_min_max = grouped.agg({'combined_years' : ['min', 'max']})
 duration = [(row[1] - row[0]) for key,row in grouped_min_max.iterrows() if (row[1]- row[0])>= 10 ] 
 average_duration = sum(duration) / len(duration)
-
+'''
 #proceed to merge with abolition
-path_abolishon = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\RAW_db\mocarelli_changes.xlsx"
+#path_abolition = 
 abolished = pd.read_excel(path_abolishon)
 abolished['Change'] = abolished['Change'].str.upper()
 list_of_changes = abolished['Change'].unique()
@@ -127,11 +131,11 @@ merged_abolishon_min_max = merged_abolishon.groupby(['guild_name', 'place']).agg
 duration = [(row[1] - row[0]) for key,row in merged_abolishon_min_max.iterrows() if (row[1]- row[0])>= 10 ] 
 average_duration = sum(duration) / len(duration)
 
+'''
+
 #order and export to excel
 columns = merged.columns.to_list()
-merged = merged.drop(columns = columns[0: 6])
-columns = merged.columns.to_list()
-reorder_columns = columns[0:3] + columns[4:7] + columns[200:202]+ [columns[203]] + [columns[202]] + [columns[3]]
-merged = merged[reorder_columns]
-merged.to_excel(r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\final_merging_attempt_raw.xlsx")
-merged_abolishon_min_max.to_excel(r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\final_merging_attempt_w_abolished_raw.xlsx")
+columns = columns[1:3] + columns[202:206] + columns[4:202]
+merged = merged[columns]
+merged.to_excel(r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\final_merging_attempt_raw1.xlsx")
+#merged_abolishon_min_max.to_excel(r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\final_merging_attempt_w_abolished_raw1.xlsx")

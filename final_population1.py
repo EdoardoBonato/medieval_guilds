@@ -24,42 +24,36 @@ import plotly.graph_objects as go
 import random
 import re
 
-path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\merged_clean.xlsx"
+path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\duration\guilds_number2.xlsx"
 merged = pd.read_excel(path)
 
-grouped = merged.groupby(['place', 'guild_name'])
 def low_high_values(x):
     return pd.Series([x.nsmallest(2).values, x.nlargest(2).values], index=['Lowest', 'Highest'])
-grouped_percentile = grouped['combined_years'].apply(low_high_values)
+
 
 def approximate_year(year):
     return round(year / 40) * 40
 
-grouped_min = grouped.agg({'combined_years' : ['min', 'max']})
-grouped_min[['group_min', 'group_max']] = grouped_min['combined_years'].apply(approximate_year)
-grouped_min = grouped_min.reset_index()
-grouped_min.columns = ['place', 'guild_name', 'min_year', 'max_year', 'group_min', 'group_max']
-grouped_min = grouped_min.sort_values(by=['place', 'min_year'])
-#create variable to have guild number
-regrouped = grouped_min.groupby('place')
-grouped_min['guilds_nr'] = regrouped.cumcount() + 1
 
 #higher size data
 #dataset_chat_gpt
-path_pop_plus = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\italian_cities_population.xlsx"
+
+#path_pop_plus = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\italian_cities_population.xlsx"
+'''
 pop_plus = pd.read_excel(path_pop_plus)
 pop_plus = pop_plus.rename(columns = {'city' : 'place', 'inhabitants in 000-s' : 'population', 'year': 'group_min'})
 pop_plus['place'] = pop_plus['place'].str.upper()
 pop_plus['population'] = pop_plus['population'].apply(lambda x: x*1000)
 common_cities_plus = []
-for place in grouped_min['place']:
-    for city in pop_plus['place']:
+for place in merged['place'].unique():
+    for city in pop_plus['place'].unique():
         if city == place:
             common_cities_plus.append(city)
             
 common_cities_plus = set(common_cities_plus)
 #merge the datasets
-population_plus = pd.merge(grouped_min, pop_plus, on = ['place', 'group_min'], how = 'left')
+population_plus = pd.merge(merged, pop_plus, on = ['place', 'group_min'], how = 'left')
+'''
 
 #dataset parente
 path_parente = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\RAW_db\datasetguilds.xls"
@@ -69,14 +63,14 @@ parente_population = pd.read_excel(path_parente)
 parente_population['place'] = parente_population['place'].str.upper()
 parente_population = parente_population.rename(columns = {'year': 'group_min'})
 parente_population['pop'] = parente_population['pop']*1000
-common_cities = list(set(grouped_min['place']).intersection(set(parente_population['place'])))    
+common_cities = list(set(merged['place']).intersection(set(parente_population['place'])))    
 print(len(set(parente_population['place'])))
 #merge dataset
-merged_population_parente = pd.merge(grouped_min, parente_population, on = ['place', 'group_min'], how ='left')
+merged_population = pd.merge(merged, parente_population, on = ['place', 'group_min'], how ='left')
 
 #merge the two high size datasets
-common_columns = list(set(merged_population_parente.columns).intersection(set(population_plus.columns)))    
-merged_population = pd.merge(population_plus, merged_population_parente, on = common_columns, how = 'left')
+#common_columns = list(set(merged_population_parente.columns).intersection(set(population_plus.columns)))    
+#merged_population = pd.merge(population_plus, merged_population_parente, on = common_columns, how = 'left')
 
 #smaller dataset(dataset_alfani)
 path_population = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\RAW_db\Database_AlfaniAndPercoco20190308144130.xlsx"
@@ -84,8 +78,8 @@ population = pd.read_excel(path_population, header = 2)
 population = population.drop(population.columns[[4, 5, 6, 7]], axis = 1)
 
 common_cities = []
-for place in grouped_min['place']:
-    for city in population['place']:
+for place in merged['place'].unique():
+    for city in population['place'].unique():
         if city == place:
             common_cities.append(city)
             
@@ -112,7 +106,7 @@ def first_non_nan_in_columns(row):
 
 # Create a new column based on the first non-NaN value in the specified columns
 guild_pop['population_x'] = guild_pop.apply(first_non_nan_in_columns, axis=1)
-
+guild_pop =guild_pop.rename(columns = {'pop' : 'population'})
 #compare the value in population and population_x
 mask = guild_pop['population'].notna() & guild_pop['population_x'].notna()
 
@@ -122,24 +116,23 @@ correspondence = pd.DataFrame(correspondence)
 correspondence_loose = [(key, row['population'] - row['population_x']) for key, row in guild_pop[mask].iterrows()]
 #still do not match, let's use parente's data where possible
 guild_pop['population_final'] = np.where(guild_pop['population_x'].isna(), guild_pop['population'], guild_pop['population_x'])
-guild_pop['population_final'] = np.where(guild_pop['population_final'].isna(), guild_pop['pop'], guild_pop['population_final'])
 
 # Calculate the correlations for each unique value in 'Place'
-correlations =  guild_pop.groupby('place').apply(lambda x: x['population_final'].corr(x['guilds_nr']))
+correlations =  guild_pop.groupby('place').apply(lambda x: x['population_final'].corr(x['guilds_nr_place']))
 correlations = correlations.dropna()
 correlations.name = 'values'
 average_corr = correlations.mean()
 
 # Display the correlations(few data)
-weights = frequencies(grouped_min['place'])
+weights = frequencies(merged['place'])
 correlations = pd.concat([correlations, weights], axis = 1, join = 'inner')
 average_weighted_corr = np.average(correlations['values'], weights= correlations['weights'])
 
 #density of guilds on population
-guild_pop['density_of_guilds'] = guild_pop['guilds_nr']/guild_pop['population_final'] * 10000
-guild_pop.to_excel(r'C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\population\population_final.xlsx')
+guild_pop['city_density_of_guilds'] = guild_pop['guilds_nr_place']/guild_pop['population_final'] * 10000
+guild_pop.to_excel(r'C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\population\population_final1.xlsx')
 
-differences = (guild_pop['population'] - guild_pop['pop'])/ guild_pop['pop']
+differences = (guild_pop['population'] - guild_pop['population_x'])/ guild_pop['population']
 average_diff = np.mean(differences)
                               
                               

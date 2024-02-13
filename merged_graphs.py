@@ -23,7 +23,7 @@ import plotly.io as pio
 import plotly.graph_objects as go
 import random
 
-path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\final_merging_attempt.xlsx"
+path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\merged_clean.xlsx"
 path_population = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\population\population_final.xlsx"
 merged = pd.read_excel(path)
 population = pd.read_excel(path_population)
@@ -44,7 +44,6 @@ grouped_place = grouped_min.groupby('place')
 number_of_guilds = grouped_years[['guild_name']].count()
 #frequencies
 cities = frequencies(grouped_min['place'])
-grouped_min.to_excel(r'C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\meged.xlsx')
 #graph the overall trend of guilds
 number_of_guilds = number_of_guilds.reset_index()
 
@@ -56,7 +55,7 @@ fig1.add_trace(go.Scatter(
     line_color='rgb(0,100,80)',
     name = 'total'
     ))
-fig1.write_html(r'C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\some_graph_attempts\total_trend.html')
+fig1.write_html(r'C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\some_graph_attempts\total_trend_nonet.html')
 
 #define functions
 def place_evolution(city = None):
@@ -150,3 +149,17 @@ cities_ = ['ROMA', 'VENEZIA', 'GENOVA', 'MILANO', 'SAVONA', 'PIACENZA', 'BOLOGNA
 graph_creation_plural(cities_)
 
 graph_creation_plural_pop(cities_)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

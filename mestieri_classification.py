@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Thu Jan 18 16:26:47 2024
 
@@ -24,6 +23,7 @@ import plotly.express as px
 import plotly.io as pio
 import plotly.graph_objects as go
 import random
+from text_analysis import find_similarity
 
 path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\final_merging_attempt.xlsx"
 
@@ -59,23 +59,18 @@ low_skilled_occupation_definition = ['OPERAI',
 embedded_low_skill = [(mestiere, model.encode(mestiere)) for mestiere in low_skilled_occupation_definition]
 embedded_low_skill = list_to_dict(embedded_low_skill)
 
-lista = []
-for key, embedding in embedded_mestieri.items():
-    embed = embedding[0].reshape(1, -1)
-    for key_low, embedding_low in embedded_low_skill.items():
-        embed_low = embedding_low[0].reshape(1, -1)
-        embedded = np.append(embed, embed_low, axis = 0)
-        similarity = cosine_similarity(embedded)
-        position = find_similarity(similarity, treshold = 0.67)
-        if len(position) > 0 :
-            lista.append((key, key_low))
-            
-def categorization(lista):
-    for tupla in lista:
-        if tupla[0] is in column:
-            
-            
-#apply the changes
-merged['category']
+lista = compare_dict(embedded_mestieri, embedded_low_skill, treshold = 0.7) 
 
-        
+#apply the changes
+for tupla in lista:
+    if tupla[0] in merged['guild_name']:
+        merged['categorization'] = tupla[1]
+
+# Create a dictionary from the list of tuples for faster lookup
+categorization_dict = list_to_dict(lista)
+
+# Apply the changes
+merged['categorization'] = merged['guild_name'].apply(lambda x: categorization_dict.get(x, np.nan))
+merged['categorization'] = merged['categorization'].apply(lambda x: x[0] if isinstance(x, list) else x)
+merged.to_excel(path)
+

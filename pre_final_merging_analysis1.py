@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Sun Feb  4 02:46:11 2024
+
+@author: edobo
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Thu Jan  4 20:12:09 2024
 
 @author: edobo
@@ -21,9 +28,9 @@ from data_structures import merge_dict
 from statistical_calculations import frequencies
 import ast
 
-ogilvie_translation_path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\ogilvie_translation_advanced.xlsx"
+ogilvie_translation_path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Ogilvie\ogilvie_translation_advanced.xlsx"
 ogilvie = pd.read_excel(ogilvie_translation_path)
-mocarelli_senato = pd.read_excel(r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Merge\merge_senato_mocarelli_ADJUSTED.xlsx")
+mocarelli_senato = pd.read_excel(r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\merge_senato_mocarelli\merge_senato_mocarelli1_ADJUSTED.xlsx")
 
 place_mapping = {'VENICE': 'VENEZIA', 'MILAN': 'MILANO', 'FLORENCE': 'FIRENZE',
                  'GENOA' : 'GENOVA', 'ROME' : 'ROMA', 'TURIN' : 'TORINO', 'PALERMO' : 'PALERMO',
@@ -45,7 +52,6 @@ embedded_mocarelli_dict = list_to_dict(embedded_mocarelli)
 #prepare ogilvie translated
 
 ogilvie_translation = pd.read_excel(ogilvie_translation_path)
-ogilvie_translation = ogilvie_translation.dropna(subset = 'place')
 ogilvie_translation['place'] = ogilvie_translation['place'].apply(lambda x: next((value for key, value in place_mapping.items() if key in x), x))
 ogilvie_names = [(row['place'], ast.literal_eval(row['guild_name_ITA_all'])) for key, row in ogilvie_translation.iterrows() if isinstance(row['guild_name_ITA_all'], str)]
 ogilvie_names_dict = list_to_dict(ogilvie_names)
@@ -83,30 +89,46 @@ for n, elements in enumerate(similarities_08):
     if len(indices[0]) != 1:
         index = indices[0]
         positions.append((elements[0],elements[1], elements[2], elements[3], index))
-'''
-positiona = []
-for n, elements in enumerate(positions):
-    positiones = elements[4][1]
-    positiona.append(positiones)
-    correspondence = elements[2][1]
-    print(correspondence)
-'''
+
+# Create a set to store unique combinations of the first two elements of the list
+unique_combinations = set()
+# Create a new list without duplicates
+result_list = []
+
+for item in positions:
+    first_two_elements = (item[0], item[1])
+    
+    # Check if the combination is not in the set (i.e., it's unique)
+    if first_two_elements not in unique_combinations:
+        unique_combinations.add(first_two_elements)
         
-path = r'C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\translator.json'
+        # Append the unique tuple to the result list
+        result_list.append(item)
+
+
+path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Ogilvie\translator.json"
 with open(path, 'r') as json_file:
     imported_dict = json.load(json_file)
 
 elements = {}
-for element in positions:
+for element in result_list:
     elements[element[1]] = element[2]
 
-eng_name = []
-for key, value in imported_dict.items():
+dict_ogilvie = [(row['guild_name'], ast.literal_eval(row['guild_name_ITA_all'])) for key, row in ogilvie_translation.iterrows() if isinstance(row['guild_name_ITA_all'], str)]
+dict_ogilvie = list_to_dict(dict_ogilvie)
+dict_ogilvie = { key : value[0] for key, value in dict_ogilvie.items()}
+eng_name = {}
+for key, value in dict_ogilvie.items():
     for key1, value1 in elements.items():
             if value1 == value:
-                eng_name.append((key, key1))
+                eng_name[key] = key1
+
                 
-                
-#it seems to be a relevant correspondence, use the corrresponding name to map italian name into ogilvie data
-#final_dict = list_to_dict(similarities_)
-#ogilvie['guild_name_ITA_both'] = ogilvie['guild_name'].map(final_dict)
+#it seems to be a relevant correspondence, use the corrresponding name to map italian name into merged data
+ogilvie_translation['guild_name_ITAlian'] = ogilvie_translation['guild_name'].map(eng_name)
+columns = ogilvie_translation.columns.to_list()
+columni = columns[6 : 20] + [columns[206]]+ columns[20: 206]
+ogilvie_translation = ogilvie_translation[columni]
+#take into consideration that in translation mocarelli the translation have already be made MANUALLY. 
+#however with this automatic imputation, results are really similar
+ogilvie_translation.to_excel(r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\Ogilvie\ogilvie_translation_advanced1.xlsx")
