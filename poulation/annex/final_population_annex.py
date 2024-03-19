@@ -1,5 +1,6 @@
-<<<<<<< HEAD:python/final_population.py
-# -*- coding: utf-8 -*-
+#this script is one of the two that can have been used to merge population data with the main dataset
+#in the main version the initial dataset used is the one with the number of guilds, hence the reduced version
+#in this annex version, the starting dataset use is the extended one
 """
 Created on Fri Jan 12 12:32:25 2024
 
@@ -29,8 +30,11 @@ path = r"C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\EDITED_db\M
 merged = pd.read_excel(path)
 
 grouped = merged.groupby(['place', 'guild_name'])
+
+#this function takes the 2 lowest and 2 highest values associated with every guilds (year)
 def low_high_values(x):
     return pd.Series([x.nsmallest(2).values, x.nlargest(2).values], index=['Lowest', 'Highest'])
+
 grouped_percentile = grouped['combined_years'].apply(low_high_values)
 
 def approximate_year(year):
