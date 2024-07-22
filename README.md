@@ -1,6 +1,6 @@
-# medieval_guilds
+**_Guilds in Italy during the 12th-18th century : An Empirical Approach_**
 
-**Italian Guilds: An Empirical Analysis**
+
 This project contains all the scripts created for my thesis titled _Guilds in Italy during the 12th-18th century : An Empirical Approach_.
 The thesis aimed at collecting data from three different sources : two excel databases and one digitalized catalog. This in order to have a clearer general view on guilds' presence in Italy and to invetigate the debated issue on the economic impact of guilds on economic growth. For this last goal, the data have been used to empirical test the hypothesis that the medieval guilds had a postive impact on economic growth. 
 
