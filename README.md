@@ -1,4 +1,4 @@
-**_Guilds in Italy during the 12th-18th century : An Empirical Approach_**
+#**_Guilds in Italy during the 12th-18th century : An Empirical Approach_**
 
 
 This project contains all the scripts created for my thesis titled _Guilds in Italy during the 12th-18th century : An Empirical Approach_.
