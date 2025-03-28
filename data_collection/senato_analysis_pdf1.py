@@ -37,6 +37,7 @@ folder_path = r'C:\Users\edobo\OneDrive\Desktop\Thesis\Medieval Guilds\Data\sena
 
 pdf_files = [file for file in os.listdir(folder_path) if file.endswith('.pdf')]
  
+ciao bello 
 
 
 pdfs_text = {}
